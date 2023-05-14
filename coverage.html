@@ -1,0 +1,1100 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>dataframe: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">mango/core/dataframe/dataframe.go (100.0%)</option>
+				
+				<option value="file1">mango/core/dataframe/print.go (93.0%)</option>
+				
+				<option value="file2">mango/core/primitive/optional.go (40.0%)</option>
+				
+				<option value="file3">mango/core/primitive/primitive.go (8.4%)</option>
+				
+				<option value="file4">mango/core/series/series.go (41.4%)</option>
+				
+				<option value="file5">mango/core/series/series_t.go (0.0%)</option>
+				
+				<option value="file6">mango/io/csv.go (68.4%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package dataframe
+
+import (
+        "errors"
+        "mango/core/series"
+)
+
+// DataFrame is a collection of Series
+type DataFrame struct {
+        Series []series.Series
+}
+
+// NewDataFrame creates a new DataFrame from a slice of Series
+func NewDataFrame(s []series.Series) *DataFrame <span class="cov8" title="1">{
+        return &amp;DataFrame{s}
+}</span>
+
+// GetColumns returns the columns of the DataFrame
+func (df *DataFrame) GetColumns() []series.Series <span class="cov8" title="1">{
+        return df.Series
+}</span>
+
+// GetColumnNames returns the column names of the DataFrame
+func (df *DataFrame) GetColumnNames() []string <span class="cov8" title="1">{
+        names := make([]string, len(df.Series))
+        for i, s := range df.Series </span><span class="cov8" title="1">{
+                names[i] = s.Name
+        }</span>
+        <span class="cov8" title="1">return names</span>
+}
+
+// Select columns from this DataFrame.
+func (df *DataFrame) Select(colNames ...string) (*DataFrame, error) <span class="cov8" title="1">{
+        series := make([]series.Series, len(colNames))
+        for i, name := range colNames </span><span class="cov8" title="1">{
+                found := false
+                for _, s := range df.Series </span><span class="cov8" title="1">{
+                        if s.Name == name </span><span class="cov8" title="1">{
+                                series[i] = s
+                                found = true
+                                break</span>
+                        }
+                }
+                <span class="cov8" title="1">if !found </span><span class="cov8" title="1">{
+                        return nil, errors.New("column not found: " + name)
+                }</span>
+        }
+        <span class="cov8" title="1">return NewDataFrame(series), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package dataframe
+
+import (
+        "fmt"
+        "strings"
+
+        "github.com/apache/arrow/go/v11/arrow"
+)
+
+func formatRow(values []string, maxLengths []int) string <span class="cov8" title="1">{
+        formatted := "|"
+        for _, value := range values </span><span class="cov8" title="1">{
+                formatted += fmt.Sprintf(" %-*v |", maxLengths[0], value)
+        }</span>
+        <span class="cov8" title="1">return formatted</span>
+}
+
+func formatSeparator(lengths []int) string <span class="cov8" title="1">{
+        separator := "+"
+        for _, length := range lengths </span><span class="cov8" title="1">{
+                separator += strings.Repeat("-", length+2) + "+"
+        }</span>
+        <span class="cov8" title="1">return separator</span>
+}
+
+func shortType(input arrow.DataType) string <span class="cov8" title="1">{
+        switch input.Name() </span>{
+        case "utf8":<span class="cov8" title="1">
+                return "str"</span>
+        case "int64":<span class="cov8" title="1">
+                return "i64"</span>
+        case "float64":<span class="cov8" title="1">
+                return "f64"</span>
+        default:<span class="cov0" title="0">
+                return input.Name()</span>
+        }
+}
+
+func (df *DataFrame) String() string <span class="cov8" title="1">{
+        columns := df.GetColumns()
+        if len(columns) == 0 </span><span class="cov0" title="0">{
+                return "Empty Dataframe"
+        }</span>
+
+        <span class="cov8" title="1">var maxLengths []int
+        var header, types []string
+
+        for _, col := range columns </span><span class="cov8" title="1">{
+                maxLength := len(col.Name)
+                header = append(header, col.Name)
+                types = append(types, shortType(col.DataType()))
+
+                for i := 0; i &lt; col.Len(); i++ </span><span class="cov8" title="1">{
+                        length := len(fmt.Sprintf("%v", col.ValueExn(i).String()))
+                        if length &gt; maxLength </span><span class="cov0" title="0">{
+                                maxLength = length
+                        }</span>
+                }
+
+                <span class="cov8" title="1">maxLengths = append(maxLengths, maxLength)</span>
+        }
+        <span class="cov8" title="1">var sb strings.Builder
+        sepRow := formatSeparator(maxLengths) + "\n"
+
+        sb.WriteString("\n")
+        sb.WriteString(sepRow)
+        sb.WriteString(formatRow(header, maxLengths) + "\n")
+        sb.WriteString(formatRow(types, maxLengths) + "\n")
+        sb.WriteString(sepRow)
+
+        nRows := columns[0].Len()
+        for i := 0; i &lt; nRows; i++ </span><span class="cov8" title="1">{
+                var rowData []string
+                for colI, col := range columns </span><span class="cov8" title="1">{
+                        value := col.ValueExn(i)
+                        rowData = append(rowData, fmt.Sprintf("%-*v", maxLengths[colI], value.String()))
+                }</span>
+                <span class="cov8" title="1">sb.WriteString(formatRow(rowData, maxLengths) + "\n")
+                sb.WriteString(sepRow)</span>
+        }
+        <span class="cov8" title="1">return sb.String()</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package primitive
+
+import "fmt"
+
+type Optional[T any] struct {
+        Value T
+        Valid bool
+}
+
+func Some[T any](val T) Optional[T] <span class="cov8" title="1">{
+        return Optional[T]{Value: val, Valid: true}
+}</span>
+
+func None[T any]() Optional[T] <span class="cov8" title="1">{
+        return Optional[T]{Valid: false}
+}</span>
+
+func (o Optional[T]) String() string <span class="cov0" title="0">{
+        if o.Valid </span><span class="cov0" title="0">{
+                return fmt.Sprintf("%v", o.Value)
+        }</span>
+        <span class="cov0" title="0">return "Null"</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// Primitive defines the primitive types that are supported by mango.
+package primitive
+
+import (
+        "fmt"
+        "strconv"
+        "strings"
+
+        "mango/utils"
+
+        "github.com/apache/arrow/go/v11/arrow"
+)
+
+type Primitive interface {
+        ~string | ~float64 | ~bool | ~int64
+}
+
+type Null struct{}
+
+// ToArrowDatatype converts a primitive type to an arrow datatype.
+func ToArrowDatatype(p interface{}) (arrow.DataType, error) <span class="cov8" title="1">{
+        switch p.(type) </span>{
+        case string:<span class="cov8" title="1">
+                return arrow.BinaryTypes.String, nil</span>
+        case float64:<span class="cov8" title="1">
+                return arrow.PrimitiveTypes.Float64, nil</span>
+        case bool:<span class="cov8" title="1">
+                return arrow.FixedWidthTypes.Boolean, nil</span>
+        case int64:<span class="cov8" title="1">
+                return arrow.PrimitiveTypes.Int64, nil</span>
+        default:<span class="cov8" title="1">
+                return nil, fmt.Errorf("unsupported type %T", p)</span>
+        }
+}
+
+var trueStrings = []string{"true", "t", "1", "1.0", "yes", "y"}
+var falseStrings = []string{"false", "f", "0", "0.0", "no", "n"}
+var boolStrings = append(trueStrings, falseStrings...)
+
+// A list of all types in order of preference
+var inferredTypeOrdering = []arrow.DataType{
+        arrow.FixedWidthTypes.Boolean,
+        arrow.PrimitiveTypes.Int64,
+        arrow.PrimitiveTypes.Float64,
+        arrow.BinaryTypes.String,
+}
+
+func inferOrExtractDatatype(data []interface{}, inferOrExtract func(interface{}) []arrow.DataType) (arrow.DataType, error) <span class="cov0" title="0">{
+        if len(data) == 0 </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("cannot infer datatype from empty list")
+        }</span>
+        <span class="cov0" title="0">possibleDatatypes := make([]arrow.DataType, 0)
+        for _, d := range data </span><span class="cov0" title="0">{
+                datatypes := inferOrExtract(d)
+                if len(datatypes) == 0 </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                <span class="cov0" title="0">if len(possibleDatatypes) == 0 </span><span class="cov0" title="0">{
+                        // If we haven't found any possible datatypes yet, set them to the first one
+                        possibleDatatypes = datatypes
+                }</span> else<span class="cov0" title="0"> {
+                        // Otherwise, remove so that we're only left with datatypes that
+                        // Everything can satisfy
+                        for _, existingType := range possibleDatatypes </span><span class="cov0" title="0">{
+                                if !utils.Contains(datatypes, existingType) </span><span class="cov0" title="0">{
+                                        possibleDatatypes = utils.Remove(possibleDatatypes, existingType)
+                                }</span>
+                        }
+                }
+        }
+        <span class="cov0" title="0">if len(possibleDatatypes) == 0 </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("could not infer datatype from list")
+        }</span>
+        // Now we have a list of possible datatypes, we need to find the best one
+        // We do this by finding the first datatype in the ordering that is in the list
+        <span class="cov0" title="0">for _, datatype := range inferredTypeOrdering </span><span class="cov0" title="0">{
+                if utils.Contains(possibleDatatypes, datatype) </span><span class="cov0" title="0">{
+                        return datatype, nil
+                }</span>
+        }
+        <span class="cov0" title="0">return nil, fmt.Errorf("could not infer datatype from list")</span>
+}
+
+// inferDatatypeFn converts a primitive type to a list of possible arrow datatypes.
+func inferDatatypeFn(p interface{}) []arrow.DataType <span class="cov0" title="0">{
+        var ret []arrow.DataType = []arrow.DataType{arrow.BinaryTypes.String}
+        switch p := p.(type) </span>{
+        case string:<span class="cov0" title="0">
+                _, err := strconv.Atoi(p)
+                if err == nil </span><span class="cov0" title="0">{
+                        ret = append(ret, arrow.PrimitiveTypes.Int64)
+                }</span>
+                <span class="cov0" title="0">_, err = strconv.ParseFloat(p, 64)
+                if err == nil </span><span class="cov0" title="0">{
+                        ret = append(ret, arrow.PrimitiveTypes.Float64)
+                }</span>
+                <span class="cov0" title="0">if utils.Contains(boolStrings, strings.TrimSpace(strings.ToLower(p))) </span><span class="cov0" title="0">{
+                        ret = append(ret, arrow.FixedWidthTypes.Boolean)
+                }</span>
+        case float64:<span class="cov0" title="0">
+                ret = append(ret, arrow.PrimitiveTypes.Float64)</span>
+        case bool:<span class="cov0" title="0">
+                ret = append(ret, arrow.FixedWidthTypes.Boolean)
+                ret = append(ret, arrow.PrimitiveTypes.Int64)
+                ret = append(ret, arrow.PrimitiveTypes.Float64)</span>
+        case int64:<span class="cov0" title="0">
+                ret = append(ret, arrow.PrimitiveTypes.Int64)
+                ret = append(ret, arrow.PrimitiveTypes.Float64)</span>
+        case Null:<span class="cov0" title="0">
+                return inferredTypeOrdering</span>
+        default:<span class="cov0" title="0">
+                return ret</span>
+        }
+        <span class="cov0" title="0">return ret</span>
+}
+
+// InferDatatype infers the arrow datatype from a list of interface{}.
+func InferDatatype(data []interface{}) (arrow.DataType, error) <span class="cov0" title="0">{
+        return inferOrExtractDatatype(data, inferDatatypeFn)
+}</span>
+
+// extractDatatypeFn is a helper function for ExtractDatatype.
+func extractDatatypeFn(x interface{}) []arrow.DataType <span class="cov0" title="0">{
+        if _, isNull := x.(Null); isNull </span><span class="cov0" title="0">{
+                return inferredTypeOrdering
+        }</span>
+        <span class="cov0" title="0">datatype, err := ToArrowDatatype(x)
+        if err != nil </span><span class="cov0" title="0">{
+                return []arrow.DataType{}
+        }</span>
+        <span class="cov0" title="0">return []arrow.DataType{datatype}</span>
+}
+
+// ExtractDatatype extracts the datatype from a list of interface{}.
+// Unlike InferDatatype, it doesn't do aggressive type coercion.
+func ExtractDatatype(data []interface{}) (arrow.DataType, error) <span class="cov0" title="0">{
+        return inferOrExtractDatatype(data, extractDatatypeFn)
+}</span>
+
+func getNil[T any]() T <span class="cov8" title="1">{
+        var nil T
+        return nil
+}</span>
+
+func ToArrowDatatypeT[T Primitive]() arrow.DataType <span class="cov8" title="1">{
+        // We know T is a Primitive so it has a valid arrow DataType
+        ret, _ := ToArrowDatatype(getNil[T]())
+        return ret
+}</span>
+
+func AttemptConversionT[T Primitive](val interface{}) (T, bool) <span class="cov0" title="0">{
+        // Check if no conversion is needed
+        var converted interface{}
+        var ok bool
+        value, ok := val.(T)
+        if ok </span><span class="cov0" title="0">{
+                return value, ok
+        }</span>
+
+        // Attempt conversion
+        <span class="cov0" title="0">nilT := getNil[T]()
+        switch val := val.(type) </span>{
+        case bool:<span class="cov0" title="0">
+                if _, isInt := any(nilT).(int64); isInt </span><span class="cov0" title="0">{
+                        if val </span><span class="cov0" title="0">{
+                                converted = 1
+                        }</span> else<span class="cov0" title="0"> {
+                                converted = 0
+                        }</span>
+                        <span class="cov0" title="0">ok = true</span>
+                } else<span class="cov0" title="0"> if _, isFloat := any(nilT).(float64); isFloat </span><span class="cov0" title="0">{
+                        if val </span><span class="cov0" title="0">{
+                                converted = 1.0
+                        }</span> else<span class="cov0" title="0"> {
+                                converted = 0.0
+                        }</span>
+                        <span class="cov0" title="0">ok = true</span>
+                } else<span class="cov0" title="0"> if _, isString := any(nilT).(string); isString </span><span class="cov0" title="0">{
+                        converted = strconv.FormatBool(val)
+                        ok = true
+                }</span>
+        case int64:<span class="cov0" title="0">
+                if _, isFloat := any(nilT).(float64); isFloat </span><span class="cov0" title="0">{
+                        converted = any(float64(val)).(T)
+                        ok = true
+                }</span> else<span class="cov0" title="0"> if _, isBool := any(nilT).(bool); isBool </span><span class="cov0" title="0">{
+                        converted = any(val != 0).(T)
+                        ok = true
+                }</span> else<span class="cov0" title="0"> if _, isString := any(nilT).(string); isString </span><span class="cov0" title="0">{
+                        converted = any(strconv.FormatInt(val, 10)).(T)
+                        ok = true
+                }</span>
+        case float64:<span class="cov0" title="0">
+                if _, isString := any(nilT).(string); isString </span><span class="cov0" title="0">{
+                        converted = any(strconv.FormatFloat(val, 'f', -1, 64)).(T)
+                        ok = true
+                }</span>
+        case string:<span class="cov0" title="0">
+                str := strings.TrimSpace(strings.ToLower(val))
+                if _, isBool := any(nilT).(bool); isBool </span><span class="cov0" title="0">{
+                        if utils.Contains(trueStrings, str) </span><span class="cov0" title="0">{
+                                converted = true
+                                ok = true
+                        }</span> else<span class="cov0" title="0"> if utils.Contains(falseStrings, str) </span><span class="cov0" title="0">{
+                                converted = false
+                                ok = true
+                        }</span>
+                } else<span class="cov0" title="0"> if _, isInt := any(nilT).(int64); isInt </span><span class="cov0" title="0">{
+                        c, err := strconv.ParseInt(val, 10, 64)
+                        if err == nil </span><span class="cov0" title="0">{
+                                converted = c
+                                ok = true
+                        }</span>
+                } else<span class="cov0" title="0"> if _, isFloat64 := any(nilT).(float64); isFloat64 </span><span class="cov0" title="0">{
+                        c, err := strconv.ParseFloat(val, 64)
+                        if err == nil </span><span class="cov0" title="0">{
+                                converted = c
+                                ok = true
+                        }</span>
+                }
+                <span class="cov0" title="0">if str == "" </span>{<span class="cov0" title="0">
+
+                }</span>
+        }
+        <span class="cov0" title="0">if ok </span><span class="cov0" title="0">{
+                return any(converted).(T), ok
+        }</span> else<span class="cov0" title="0"> {
+                return nilT, ok
+        }</span>
+}
+
+// CastListT casts a list of interface{} to a list of T.
+// The second argument is the validity array, though there can be
+// primitive.Null or uncastable types in data
+// It also returns a list of bools indicating whether the cast was successful.
+func CastListT[T Primitive](data []interface{}, valid []bool) ([]T, []bool) <span class="cov0" title="0">{
+        casted := make([]T, len(data))
+        valids := make([]bool, len(data))
+        for i, val := range data </span><span class="cov0" title="0">{
+                if valid != nil &amp;&amp; !valid[i] </span><span class="cov0" title="0">{
+                        casted[i] = getNil[T]()
+                        continue</span>
+                }
+                <span class="cov0" title="0">value, ok := AttemptConversionT[T](val)
+                casted[i] = value
+                valids[i] = ok</span>
+        }
+        <span class="cov0" title="0">return casted, valids</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package series
+
+// Inspired by https://pola-rs.github.io/polars/polars/series/trait.SeriesTrait.html
+
+import (
+        "fmt"
+        "mango/core/chunked"
+        "mango/core/primitive"
+
+        "github.com/apache/arrow/go/v11/arrow"
+        "github.com/apache/arrow/go/v11/arrow/array"
+        "github.com/apache/arrow/go/v11/arrow/memory"
+)
+
+type InterfaceBase struct {
+        Name   string
+        Rename (string)
+}
+
+type Series struct {
+        Name string
+        ca   *arrow.Chunked
+}
+
+// NewSeries creates a new Series from a chunked array.
+func NewSeriesFromArray(name string, arr arrow.Array) Series <span class="cov8" title="1">{
+        return Series{
+                Name: name,
+                ca:   arrow.NewChunked(arr.DataType(), []arrow.Array{arr}),
+        }
+}</span>
+
+// NewSeriesFromSlice creates a new Series from a slice of interface{}.
+// The valid slice determines which values in v are valid (not null).
+// The valid slice must either be empty or be equal in length to v.
+// If empty, all values in v are appended and considered valid.
+// If inferTypes is true, the type of the series will be inferred from the values in v.
+// Mango will attempt to parse your values -- for example, ["1", "2", "3"] will
+// be parsed into a series of type int64 if inferTypes is true.
+func NewSeriesFromSlice[T any](name string, valsAsT []T, valid []bool, inferTypes bool) Series <span class="cov8" title="1">{
+        memory := memory.NewGoAllocator()
+        var ret arrow.Array
+        var typeToConvertTo arrow.DataType
+        var err error
+
+        vals := make([]interface{}, len(valsAsT))
+        for i, v := range valsAsT </span><span class="cov8" title="1">{
+                vals[i] = v
+        }</span>
+
+        <span class="cov8" title="1">if !inferTypes </span><span class="cov8" title="1">{
+                typeToConvertTo, err = primitive.ExtractDatatype(vals)
+        }</span> else<span class="cov0" title="0"> {
+                typeToConvertTo, err = primitive.InferDatatype(vals)
+        }</span>
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+
+        <span class="cov8" title="1">switch typeToConvertTo.ID() </span>{
+        case arrow.STRING:<span class="cov8" title="1">
+                b := array.NewStringBuilder(memory)
+                defer b.Release()
+                b.AppendValues(primitive.CastListT[string](vals, valid))
+                ret = b.NewStringArray()</span>
+        case arrow.FLOAT64:<span class="cov8" title="1">
+                b := array.NewFloat64Builder(memory)
+                defer b.Release()
+                b.AppendValues(primitive.CastListT[float64](vals, valid))
+                ret = b.NewFloat64Array()</span>
+        case arrow.BOOL:<span class="cov0" title="0">
+                b := array.NewBooleanBuilder(memory)
+                defer b.Release()
+                b.AppendValues(primitive.CastListT[bool](vals, valid))
+                ret = b.NewBooleanArray()</span>
+        case arrow.INT64:<span class="cov0" title="0">
+                b := array.NewInt64Builder(memory)
+                defer b.Release()
+                b.AppendValues(primitive.CastListT[int64](vals, valid))
+                ret = b.NewInt64Array()</span>
+
+        }
+        <span class="cov8" title="1">return NewSeriesFromArray(name, ret)</span>
+}
+
+// NewSeriesFromValue creates a new Series from a single value.
+func NewSeriesFromValue(name string, val interface{}) Series <span class="cov8" title="1">{
+        return NewSeriesFromSlice(name, []interface{}{val}, nil, false)
+}</span>
+
+func NewSeriesFromArrayT[T any](name string, arr []T) Series <span class="cov0" title="0">{
+        genericArr := make([]interface{}, len(arr))
+        for i, v := range arr </span><span class="cov0" title="0">{
+                genericArr[i] = v
+        }</span>
+        <span class="cov0" title="0">return NewSeriesFromSlice(name, genericArr, nil, false)</span>
+}
+
+// NewSeries creates a new series from arbitrary data, matching on the structure of that data.
+// Matches slice, array, and single value.
+func NewSeries(name string, data interface{}) Series <span class="cov8" title="1">{
+        switch data := data.(type) </span>{
+        case []interface{}:<span class="cov8" title="1">
+                return NewSeriesFromSlice(name, data, nil, false)</span>
+        case []int64:<span class="cov0" title="0">
+                return NewSeriesFromArrayT(name, data)</span>
+        case []float64:<span class="cov0" title="0">
+                return NewSeriesFromArrayT(name, data)</span>
+        case []bool:<span class="cov0" title="0">
+                return NewSeriesFromArrayT(name, data)</span>
+        case []string:<span class="cov0" title="0">
+                return NewSeriesFromArrayT(name, data)</span>
+        case arrow.Array:<span class="cov8" title="1">
+                return NewSeriesFromArray(name, data)</span>
+        default:<span class="cov8" title="1">
+                return NewSeriesFromValue(name, data)</span>
+        }
+}
+
+// Rename renames the series.
+func (s *Series) Rename(newName string) <span class="cov8" title="1">{
+        s.Name = newName
+}</span>
+
+// ChunkLengths returns the lengths of the underlying chunks.
+func (s *Series) ChunkLengths() []int <span class="cov8" title="1">{
+        chunks := s.ca.Chunks()
+        ret := make([]int, len(chunks))
+        for i, chunk := range chunks </span><span class="cov8" title="1">{
+                ret[i] = chunk.Len()
+        }</span>
+        <span class="cov8" title="1">return ret</span>
+}
+
+// Chunks returns the underlying chunks of the Series.
+func (s *Series) Chunks() []arrow.Array <span class="cov8" title="1">{
+        return s.ca.Chunks()
+}</span>
+
+// Slice returns a zero-copy slice of the Series.
+// When offset is negative the offset is counted from
+// The end of the Series.
+func (s *Series) Slice(offset, length int64) (Series, error) <span class="cov8" title="1">{
+        if offset &lt; 0 </span><span class="cov8" title="1">{
+                offset = offset + int64(s.ca.Len())
+        }</span>
+        <span class="cov8" title="1">if length &gt; int64(s.ca.Len()) </span><span class="cov8" title="1">{
+                return Series{}, fmt.Errorf("length %d is greater than the length of the Series %d", length, s.ca.Len())
+        }</span>
+        <span class="cov8" title="1">if length+offset &gt; int64(s.ca.Len()) </span><span class="cov8" title="1">{
+                return Series{}, fmt.Errorf("length + offset %d is greater than the length of the Series %d", length+offset, s.ca.Len())
+        }</span>
+        <span class="cov8" title="1">chunkSlice := array.NewChunkedSlice(s.ca, offset, offset+length)
+        return Series{Name: s.Name, ca: (chunkSlice)}, nil</span>
+}
+
+// Filter filters by boolean mask. This operation clones data.
+func (s *Series) Filter(mask *SeriesT[bool]) (Series, error) <span class="cov0" title="0">{
+        if mask.Len() != s.ca.Len() </span><span class="cov0" title="0">{
+                return Series{}, fmt.Errorf("length of mask %d is not equal to the length of the Series %d", mask.Len(), s.ca.Len())
+        }</span>
+        <span class="cov0" title="0">if mask.DataType().ID() != arrow.BOOL </span><span class="cov0" title="0">{
+                return Series{}, fmt.Errorf("mask is not of type bool")
+        }</span>
+        <span class="cov0" title="0">rets := make([]interface{}, mask.Len())
+        retsI := 0
+        for i := 0; i &lt; mask.Len(); i++ </span><span class="cov0" title="0">{
+                isValid, err := mask.Value(i)
+                if err != nil </span><span class="cov0" title="0">{
+                        return Series{}, err
+                }</span>
+                // if v is Nill, value should be the default value, which is false.
+                <span class="cov0" title="0">if isValid.Value </span><span class="cov0" title="0">{
+                        v, e := s.Value(i)
+                        if e != nil </span><span class="cov0" title="0">{
+                                return Series{}, err
+                        }</span>
+                        <span class="cov0" title="0">rets[retsI] = v.Value
+                        retsI++</span>
+                }
+        }
+        <span class="cov0" title="0">return NewSeriesFromSlice(s.Name, rets, nil, false), nil</span>
+}
+
+// Take by index. This operation copies the data.
+func (s *Series) Take(indices *SeriesT[int64]) (Series, error) <span class="cov0" title="0">{
+        if indices.Len() &gt; s.ca.Len() </span><span class="cov0" title="0">{
+                return Series{}, fmt.Errorf("length of indices %d is greater than the length of the Series %d", indices.Len(), s.ca.Len())
+        }</span>
+
+        <span class="cov0" title="0">rets := make([]interface{}, indices.Len())
+        valids := make([]bool, indices.Len())
+        for i := 0; i &lt; indices.Len(); i++ </span><span class="cov0" title="0">{
+                optIndex, _ := indices.Value(i)
+                if optIndex.Valid </span><span class="cov0" title="0">{
+                        value, isValid, err := s.ValueUnpacked(int(optIndex.Value))
+                        if err != nil </span><span class="cov0" title="0">{
+                                return Series{}, err
+                        }</span>
+                        <span class="cov0" title="0">rets[i] = value
+                        valids[i] = isValid</span>
+                }
+        }
+        <span class="cov0" title="0">return NewSeriesFromSlice(s.Name, rets, valids, false), nil</span>
+}
+
+// Len returns the length of the Series.
+func (s *Series) Len() int <span class="cov8" title="1">{
+        return s.ca.Len()
+}</span>
+
+// NumChunks returns the number of chunks.
+func (s *Series) NumChunks() int <span class="cov8" title="1">{
+        return len(s.ca.Chunks())
+}</span>
+
+// DataType returns the arrow data type of the Series.
+func (s *Series) DataType() arrow.DataType <span class="cov8" title="1">{
+        return s.ca.DataType()
+}</span>
+
+// Rechunk aggregates all chunks to a contiguous array of memory.
+func (s *Series) Rechunk() <span class="cov0" title="0">{
+        if s.NumChunks() &lt;= 1 </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov0" title="0">rets := make([]interface{}, 0, s.ca.Len())
+        valids := make([]bool, 0, s.ca.Len())
+        for _, chunk := range s.Chunks() </span><span class="cov0" title="0">{
+                chunkVals, chunkValids, err := chunked.ExtractChunk[string](chunk)
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+                <span class="cov0" title="0">rets = append(rets, any(chunkVals).([]interface{})...)
+                valids = append(valids, chunkValids...)</span>
+        }
+        <span class="cov0" title="0">newSeries := NewSeriesFromSlice(s.Name, rets, valids, false)
+        s.ca.Release()
+        s.ca = newSeries.ca</span>
+}
+
+// TakeEvery takes every nth element as a new Series.
+func (s *Series) TakeEvery(n int) Series <span class="cov0" title="0">{
+        if n == 1 </span><span class="cov0" title="0">{
+                return *s
+        }</span>
+        <span class="cov0" title="0">bools := make([]bool, s.Len())
+        for i := 0; i &lt; s.Len(); i += n </span><span class="cov0" title="0">{
+                bools[i] = true
+        }</span>
+        <span class="cov0" title="0">ser := NewSeriesTFromTSlice("", bools, nil)
+        ret, err := s.Filter(&amp;ser)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">return ret</span>
+}
+
+// ResolveIndex returns the index of the chunk, and the index within that chunk.
+func (s *Series) ResolveIndex(i int) (int, int) <span class="cov8" title="1">{
+        chunkLengths := s.ChunkLengths()
+        chunkIndex := 0
+        for i &gt;= chunkLengths[chunkIndex] </span><span class="cov0" title="0">{
+                if i-chunkLengths[chunkIndex] &lt; 0 </span><span class="cov0" title="0">{
+                        break</span>
+                }
+                <span class="cov0" title="0">i -= chunkLengths[chunkIndex]
+                chunkIndex++</span>
+        }
+        <span class="cov8" title="1">return chunkIndex, i</span>
+}
+
+// valueExnHelper returns the value at index i, wrapped in a primitive.Optional
+// It does not returns errors -- it panics on them
+// See ValueExn for the function that returns the same thing, typed as primitive.Optional.
+func (s *Series) valueExnHelper(i int) interface{} <span class="cov8" title="1">{
+        chunkIndex, i := s.ResolveIndex(i)
+
+        chunk := s.Chunks()[chunkIndex]
+        if chunk.IsNull(i) </span><span class="cov8" title="1">{
+                return primitive.None[interface{}]()
+        }</span>
+        <span class="cov8" title="1">extractValueFn, err := chunked.ExtractValueFn(chunk)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov8" title="1">return primitive.Some(extractValueFn(i))</span>
+}
+
+func (s *Series) ValueExn(i int) primitive.Optional[interface{}] <span class="cov8" title="1">{
+        v := s.valueExnHelper(i)
+        return v.(primitive.Optional[interface{}])
+}</span>
+
+// Value returns the value at index i, wrapped in a primitive.Optional
+// If the value is null, the second return value is false.
+func (s *Series) Value(i int) (primitive.Optional[interface{}], error) <span class="cov0" title="0">{
+        if i &gt;= s.Len() </span><span class="cov0" title="0">{
+                return primitive.None[interface{}](), fmt.Errorf("index out of range")
+        }</span>
+        <span class="cov0" title="0">return s.ValueExn(i), nil</span>
+}
+
+// ValueUnpacked returns the value at index i, without wrapping it in a primitive.Optional
+// The second return value is true if the value is null.
+// The third return value represents errors
+func (s *Series) ValueUnpacked(i int) (interface{}, bool, error) <span class="cov0" title="0">{
+        v, err := s.Value(i)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, false, err
+        }</span>
+        <span class="cov0" title="0">if !v.Valid </span><span class="cov0" title="0">{
+                return nil, true, nil
+        }</span>
+        <span class="cov0" title="0">return v.Value, false, nil</span>
+}
+
+// Head returns the first n elements of the Series, wrapped in a primitive.Optional.
+// The third element is an error if the user's request is invalid or misformatted.
+func (s *Series) Head(n int) ([]interface{}, error) <span class="cov0" title="0">{
+        if n &gt; s.ca.Len() </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("n %d is greater than the length of the Series %d", n, s.ca.Len())
+        }</span>
+        <span class="cov0" title="0">ret := make([]interface{}, n)
+        for i := 0; i &lt; n; i++ </span><span class="cov0" title="0">{
+                // Don't check errors, because we already checked the length
+                val, _ := s.Value(i)
+                ret[i] = val
+        }</span>
+        <span class="cov0" title="0">return ret, nil</span>
+}
+
+// Tail returns the last n elements of the Series.
+func (s *Series) Tail(n int) ([]interface{}, []bool, error) <span class="cov0" title="0">{
+        if n &gt; s.ca.Len() </span><span class="cov0" title="0">{
+                return nil, nil, fmt.Errorf("n %d is greater than the length of the Series %d", n, s.ca.Len())
+        }</span>
+        <span class="cov0" title="0">ret := make([]interface{}, n)
+        nulls := make([]bool, n)
+        for i := 0; i &lt; n; i++ </span><span class="cov0" title="0">{
+                // Don't check errors, because we already checked the length
+                val, _ := s.Value(i)
+                ret[i] = val
+        }</span>
+        <span class="cov0" title="0">return ret, nulls, nil</span>
+}
+
+// IsValid returns true if the value at index i is not null.
+func (s *Series) IsValid(i int) (bool, error) <span class="cov8" title="1">{
+        if i &gt; s.Len() </span><span class="cov0" title="0">{
+                return false, fmt.Errorf("index out of range")
+        }</span>
+        <span class="cov8" title="1">chunkIndex, i := s.ResolveIndex(i)
+        return s.Chunks()[chunkIndex].IsValid(i), nil</span>
+}
+
+// IsValidExn returns true if the value at index i is not null.
+// It panics on errors.
+func (s *Series) IsValidExn(i int) bool <span class="cov8" title="1">{
+        val, err := s.IsValid(i)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov8" title="1">return val</span>
+}
+
+// IsNull returns a bool array indicating if the value at index i is null.
+func (s *Series) IsNull() []bool <span class="cov8" title="1">{
+        ret := make([]bool, s.Len())
+        for i := 0; i &lt; s.Len(); i++ </span><span class="cov8" title="1">{
+                ret[i] = !s.IsValidExn(i)
+        }</span>
+        <span class="cov8" title="1">return ret</span>
+}
+
+// IsNotNull returns a bool array indicating if the value at index i is not null.
+func (s *Series) IsNotNull() []bool <span class="cov8" title="1">{
+        ret := make([]bool, s.Len())
+        for i := 0; i &lt; s.Len(); i++ </span><span class="cov8" title="1">{
+                ret[i] = s.IsValidExn(i)
+        }</span>
+        <span class="cov8" title="1">return ret</span>
+}
+
+// NewSeriesFromBools creates a new Series from a bool slice.
+// func NewSeriesFromBool(name string, data []bool) Series {
+//         pool := memory.NewGoAllocator()
+//         b := array.NewBooleanBuilder(pool)
+//         defer b.Release()
+
+//         b.AppendValues(data, nil)
+//         arr := b.NewArray()
+//         return NewSeriesFromArray(name, arr)
+// }
+
+// NewSeriesFromBools creates a new SeriesT from a bool slice.
+// func NewSeriesTFromBool(name string, data []bool) SeriesT[bool] {
+//         ser := NewSeriesFromBool(name, data)
+//         return SeriesT[bool]{Series: ser}
+// }
+
+// NewSeriesFromFloat64 creates a new Series from a float64 slice.
+// func NewSeriesFromFloat64(name string, data []float64) Series {
+//         pool := memory.NewGoAllocator()
+//         b := array.NewFloat64Builder(pool)
+//         defer b.Release()
+
+//         b.AppendValues(data, nil)
+//         arr := b.NewArray()
+//         return Series{Name: name, ca: array.NewChunked(arr.DataType(), []array.Interface{arr})}
+// }
+
+// NullN returns the number of nulls.
+func (s Series) NullN() int <span class="cov8" title="1">{
+        return s.ca.NullN()
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package series
+
+import (
+        "fmt"
+        "mango/core/primitive"
+
+        "github.com/apache/arrow/go/v11/arrow"
+)
+
+type SeriesT[T primitive.Primitive] struct {
+        Series
+}
+
+func NewSeriesTFromArray[T primitive.Primitive](name string, arr arrow.Array) SeriesT[T] <span class="cov0" title="0">{
+        return SeriesT[T]{
+                Series: NewSeriesFromArray(name, arr),
+        }
+}</span>
+
+// NewSeriesTFromTSlice creates a new Series from a slice of interface{}.
+// The valid slice determines which values in v are valid (not null).
+// The valid slice must either be empty or be equal in length to v.
+// If empty, all values in v are appended and considered valid.
+func NewSeriesTFromTSlice[T primitive.Primitive](name string, vals []T, valid []bool) SeriesT[T] <span class="cov0" title="0">{
+        series := NewSeriesFromSlice(name, any(vals).([]interface{}), valid, false)
+        seriesT := SeriesT[T]{Series: series}
+        err := seriesT.Validate()
+        if err != nil </span><span class="cov0" title="0">{
+                // We passed a []T so this should be impossible
+                panic(err)</span>
+        }
+        <span class="cov0" title="0">return seriesT</span>
+}
+
+func NewSeriesTFromT[T primitive.Primitive](name string, val T) SeriesT[T] <span class="cov0" title="0">{
+        return NewSeriesTFromTSlice(name, []T{val}, nil)
+}</span>
+
+// Validate checks that the type T corresponds to the underying data.
+// Returns an error if this is not true.
+// Make sure to call this when you instantiate a new SeriesT.
+func (s *SeriesT[T]) Validate() error <span class="cov0" title="0">{
+        datatype := primitive.ToArrowDatatypeT[T]()
+        if s.ca.DataType().ID() != datatype.ID() </span><span class="cov0" title="0">{
+                return fmt.Errorf("the underlying datatype is not %s", datatype.Name())
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+// Value returns the value at index i as type T, wrapped in a primitive.Optional.
+// Returns an error if this is not possible.
+func (s *SeriesT[T]) Value(i int) (primitive.Optional[T], error) <span class="cov0" title="0">{
+        v, err := s.Series.Value(i)
+        if err != nil </span><span class="cov0" title="0">{
+                return primitive.None[T](), err
+        }</span>
+        <span class="cov0" title="0">return any(v).(primitive.Optional[T]), nil</span>
+}
+
+// Len returns the length of the Series.
+func (s *SeriesT[T]) Len() int <span class="cov0" title="0">{
+        return s.Series.Len()
+}</span>
+
+// Filter returns a new SeriesT[T] with only the values where the mask is true.
+// func (s *SeriesT[T]) Filter(mask *SeriesT[bool]) (SeriesT[T], error) {
+//         rets := make([]T, mask.Len())
+//         retsI := 0
+//         for i := 0; i &lt; mask.Len(); i++ {
+//                 v, err := mask.Value(i)
+//                 if err != nil {
+//                         return SeriesT[T]{}, err
+//                 }
+//                 // if v is Nill, value should be the default value, which is false.
+//                 if v.Value {
+//                         v, e := s.Value(i)
+//                         if e != nil {
+//                                 return SeriesT[T]{}, err
+//                         }
+//                         rets[retsI] = v.Value
+//                         retsI++
+//                 }
+//         }
+//         return NewSeriesTFromTSlice[T](s.Name, rets, nil), nil
+// }
+
+// AsFloat64 returns the Series as a typed Series of type float64.
+// Returns an error if this is not possible.
+// func (s *Series) AsFloat64() (SeriesT[float64], error) {
+//         ret := SeriesT[float64]{Name: s.Name, ca: s.ca}
+//         err := ret.Validate()
+//         if err != nil {
+//                 return SeriesT[float64]{}, err
+//         }
+//         return ret, nil
+// }
+
+// AsString returns the Series as a typed Series of type string.
+// Returns an error if this is not possible.
+// func (s *Series) AsString() (SeriesT[string], error) {
+//         ret := SeriesT[string]{Name: s.Name, ca: s.ca}
+//         err := ret.Validate()
+//         if err != nil {
+//                 return SeriesT[string]{}, err
+//         }
+//         return ret, nil
+// }
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package io
+
+import (
+        rawcsv "encoding/csv"
+        "io"
+        "mango/core/dataframe"
+        "mango/core/series"
+        "os"
+        "strings"
+)
+
+// ReadCsv reads a CSV file from an io.Reader and returns a DataFrame
+func ReadCsv(input io.Reader) (*dataframe.DataFrame, error) <span class="cov8" title="1">{
+        var df dataframe.DataFrame
+
+        lines, err := rawcsv.NewReader(input).ReadAll()
+        if err != nil </span><span class="cov0" title="0">{
+                return &amp;df, err
+        }</span>
+        <span class="cov8" title="1">names := lines[0]
+        var data [][]interface{} = make([][]interface{}, len(names))
+        for _, line := range lines[1:] </span><span class="cov8" title="1">{
+                for i, v := range line </span><span class="cov8" title="1">{
+                        data[i] = append(data[i], v)
+                }</span>
+        }
+        <span class="cov8" title="1">seriesSlice := make([]series.Series, len(names))
+        for i, name := range names </span><span class="cov8" title="1">{
+                seriesSlice[i] = series.NewSeriesFromSlice(name, data[i], nil, true)
+        }</span>
+        <span class="cov8" title="1">return dataframe.NewDataFrame(seriesSlice), nil</span>
+}
+
+// ReadCsvFile reads a CSV file from a path and returns a DataFrame
+func ReadCsvFile(path string) (*dataframe.DataFrame, error) <span class="cov0" title="0">{
+        file, err := os.Open(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return &amp;dataframe.DataFrame{}, err
+        }</span>
+        <span class="cov0" title="0">defer file.Close()
+        return ReadCsv(file)</span>
+}
+
+// ReadCsvString reads a CSV string and returns a DataFrame
+func ReadCsvString(s string) (*dataframe.DataFrame, error) <span class="cov8" title="1">{
+        return ReadCsv(strings.NewReader(s))
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
