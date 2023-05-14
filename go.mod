@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/apache/arrow/go/v11 v11.0.0
 	github.com/zeebo/assert v1.3.0
-	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 )
 
 require (
