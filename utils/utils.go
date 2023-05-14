@@ -57,10 +57,10 @@ func FilterSlice[T any](list []T, start, end, step int) []T {
 }
 
 // SumSlice sums a slice.
-func SumSlice[T Number](list []T, start, end, step int) T {
+func SumSlice[T Number](list []T) T {
 	var sum T
 
-	for i := start; i <= end; i += step {
+	for i := 0; i <= len(list); i++ {
 		sum = list[i]
 	}
 
