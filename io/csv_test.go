@@ -1,10 +1,11 @@
 package io_test
 
 import (
-	"mango/core/dataframe"
-	"mango/core/series"
-	"mango/io"
 	"testing"
+
+	"github.com/kstremick/mango/core/dataframe"
+	"github.com/kstremick/mango/core/series"
+	"github.com/kstremick/mango/io"
 
 	"github.com/zeebo/assert"
 )

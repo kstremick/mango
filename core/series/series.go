@@ -4,8 +4,10 @@ package series
 
 import (
 	"fmt"
-	"mango/core/chunked"
-	"mango/core/primitive"
+
+	"github.com/kstremick/mango/core/primitive"
+
+	"github.com/kstremick/mango/core/chunked"
 
 	"github.com/apache/arrow/go/v11/arrow"
 	"github.com/apache/arrow/go/v11/arrow/array"

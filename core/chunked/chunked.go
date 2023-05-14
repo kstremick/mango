@@ -2,7 +2,8 @@ package chunked
 
 import (
 	"fmt"
-	"mango/core/primitive"
+
+	"github.com/kstremick/mango/core/primitive"
 
 	"github.com/apache/arrow/go/v11/arrow"
 	"github.com/apache/arrow/go/v11/arrow/array"

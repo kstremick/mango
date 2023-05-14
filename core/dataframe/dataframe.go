@@ -2,8 +2,9 @@ package dataframe
 
 import (
 	"errors"
-	"mango/core/primitive"
-	"mango/core/series"
+
+	"github.com/kstremick/mango/core/primitive"
+	"github.com/kstremick/mango/core/series"
 )
 
 // DataFrame is a collection of Series

@@ -2,9 +2,10 @@ package series_test
 
 import (
 	"fmt"
-	"mango/core/primitive"
-	"mango/core/series"
 	"testing"
+
+	"github.com/kstremick/mango/core/primitive"
+	"github.com/kstremick/mango/core/series"
 
 	"github.com/apache/arrow/go/v11/arrow"
 	"github.com/apache/arrow/go/v11/arrow/array"

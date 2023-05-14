@@ -3,10 +3,11 @@ package io
 import (
 	rawcsv "encoding/csv"
 	"io"
-	"mango/core/dataframe"
-	"mango/core/series"
 	"os"
 	"strings"
+
+	"github.com/kstremick/mango/core/dataframe"
+	"github.com/kstremick/mango/core/series"
 )
 
 // ReadCsv reads a CSV file from an io.Reader and returns a DataFrame

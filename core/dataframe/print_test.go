@@ -1,8 +1,9 @@
 package dataframe_test
 
 import (
-	"mango/io"
 	"testing"
+
+	"github.com/kstremick/mango/io"
 
 	"github.com/zeebo/assert"
 )

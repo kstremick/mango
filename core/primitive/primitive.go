@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"mango/utils"
+	"github.com/kstremick/mango/utils"
 
 	"github.com/apache/arrow/go/v11/arrow"
 )

@@ -2,7 +2,8 @@ package series
 
 import (
 	"fmt"
-	"mango/core/primitive"
+
+	"github.com/kstremick/mango/core/primitive"
 
 	"github.com/apache/arrow/go/v11/arrow"
 )

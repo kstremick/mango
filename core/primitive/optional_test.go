@@ -1,8 +1,9 @@
 package primitive_test
 
 import (
-	"mango/core/primitive"
 	"testing"
+
+	"github.com/kstremick/mango/core/primitive"
 
 	"github.com/zeebo/assert"
 )
