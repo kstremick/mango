@@ -1,4 +1,4 @@
-module mango
+module github.com/kstremick/mango
 
 go 1.20
 
