@@ -44,17 +44,14 @@ func ArgMax[T constraints.Ordered](list []T) int {
 
 // FilterSlice filters the slice using start, end, step.
 // Negative values are allowed.
+// Clamps start and end to remain in bounds.
 func FilterSlice[T any](list []T, start, end, step int) []T {
 	if start < 0 {
 		start = len(list) - 1 - start
 	}
 
-	if end < 0 {
+	if end <= 0 {
 		end = len(list) - 1 - end
-	}
-
-	if end < start {
-		end = len(list) - 1
 	}
 
 	return list[start:end:step]
