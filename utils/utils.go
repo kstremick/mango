@@ -53,6 +53,10 @@ func FilterSlice[T any](list []T, start, end, step int) []T {
 		end = len(list) - 1 - end
 	}
 
+	if end < start {
+		end = len(list) - 1
+	}
+
 	return list[start:end:step]
 }
 
