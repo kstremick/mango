@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kstremick/mango/utils"
+	utils "github.com/kstremick/mango/utils/slice"
 
-	"github.com/apache/arrow/go/v11/arrow"
+	"github.com/apache/arrow/go/v12/arrow"
 )
 
 type Primitive interface {
@@ -227,7 +227,6 @@ func AttemptConversionT[T Primitive](val interface{}) (T, bool) {
 			}
 		}
 		if str == "" {
-
 		}
 	}
 	if ok {

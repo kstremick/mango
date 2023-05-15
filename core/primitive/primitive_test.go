@@ -5,7 +5,7 @@ import (
 
 	"github.com/kstremick/mango/core/primitive"
 
-	"github.com/apache/arrow/go/v11/arrow"
+	"github.com/apache/arrow/go/v12/arrow"
 )
 
 func TestToArrowDatatype(t *testing.T) {

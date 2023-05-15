@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/apache/arrow/go/v11/arrow"
+	"github.com/apache/arrow/go/v12/arrow"
 )
 
 func formatRow(values []string, maxLengths []int) string {

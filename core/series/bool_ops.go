@@ -3,7 +3,7 @@ package series
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/v11/arrow"
+	"github.com/apache/arrow/go/v12/arrow"
 )
 
 // Any returns true if any of the values in the Series are true

@@ -9,9 +9,9 @@ import (
 
 	"github.com/kstremick/mango/core/chunked"
 
-	"github.com/apache/arrow/go/v11/arrow"
-	"github.com/apache/arrow/go/v11/arrow/array"
-	"github.com/apache/arrow/go/v11/arrow/memory"
+	"github.com/apache/arrow/go/v12/arrow"
+	"github.com/apache/arrow/go/v12/arrow/array"
+	"github.com/apache/arrow/go/v12/arrow/memory"
 )
 
 type InterfaceBase struct {
@@ -29,6 +29,14 @@ func NewSeriesFromArray(name string, arr arrow.Array) Series {
 	return Series{
 		Name: name,
 		ca:   arrow.NewChunked(arr.DataType(), []arrow.Array{arr}),
+	}
+}
+
+// NewSeriesFromChunked creates a new Series from a chunked array.
+func NewSeriesFromChunked(name string, ca *arrow.Chunked) Series {
+	return Series{
+		Name: name,
+		ca:   ca,
 	}
 }
 
@@ -390,6 +398,11 @@ func (s *Series) IsValidExn(i int) bool {
 	return val
 }
 
+// NullN returns the number of nulls.
+func (s Series) NullN() int {
+	return s.ca.NullN()
+}
+
 // IsNull returns a bool array indicating if the value at index i is null.
 func (s *Series) IsNull() []bool {
 	ret := make([]bool, s.Len())
@@ -406,37 +419,4 @@ func (s *Series) IsNotNull() []bool {
 		ret[i] = s.IsValidExn(i)
 	}
 	return ret
-}
-
-// NewSeriesFromBools creates a new Series from a bool slice.
-// func NewSeriesFromBool(name string, data []bool) Series {
-// 	pool := memory.NewGoAllocator()
-// 	b := array.NewBooleanBuilder(pool)
-// 	defer b.Release()
-
-// 	b.AppendValues(data, nil)
-// 	arr := b.NewArray()
-// 	return NewSeriesFromArray(name, arr)
-// }
-
-// NewSeriesFromBools creates a new SeriesT from a bool slice.
-// func NewSeriesTFromBool(name string, data []bool) SeriesT[bool] {
-// 	ser := NewSeriesFromBool(name, data)
-// 	return SeriesT[bool]{Series: ser}
-// }
-
-// NewSeriesFromFloat64 creates a new Series from a float64 slice.
-// func NewSeriesFromFloat64(name string, data []float64) Series {
-// 	pool := memory.NewGoAllocator()
-// 	b := array.NewFloat64Builder(pool)
-// 	defer b.Release()
-
-// 	b.AppendValues(data, nil)
-// 	arr := b.NewArray()
-// 	return Series{Name: name, ca: array.NewChunked(arr.DataType(), []array.Interface{arr})}
-// }
-
-// NullN returns the number of nulls.
-func (s Series) NullN() int {
-	return s.ca.NullN()
 }
