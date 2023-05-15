@@ -23,6 +23,12 @@ func New[K comparable](elems ...K) Set[K] {
 	return ret
 }
 
+// NewCharSet instantiates a New set of type rune
+// from a string
+func NewCharSet(s string) Set[rune] {
+	return New([]rune(s)...)
+}
+
 // Add adds one or more elements to the Set
 func (s Set[K]) Add(elems ...K) {
 	for _, elem := range elems {
